@@ -4,6 +4,13 @@ import { registerRoutes } from './routes';
 
 const app = Fastify({
   logger: true,
+  ajv: {
+    customOptions: {
+      allErrors: true,
+      removeAdditional: false,
+      coerceTypes: false,
+    },
+  },
 });
 
 const shutdown = async (): Promise<void> => {
