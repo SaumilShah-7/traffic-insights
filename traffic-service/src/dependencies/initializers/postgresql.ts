@@ -1,10 +1,6 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import {
-  DependencyType,
-  PostgresDependencyClient,
-  PostgresDependencyConfig,
-} from '../interface';
+import { DependencyType, PostgresDependencyClient, PostgresDependencyConfig } from '../interface';
 
 const initializePostgresDependency = async (
   config: PostgresDependencyConfig,

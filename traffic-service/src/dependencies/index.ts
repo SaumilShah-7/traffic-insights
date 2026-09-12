@@ -10,9 +10,7 @@ import {
 
 let dependencies: Dependencies | undefined;
 
-const initializeDependency = async (
-  config: DependencyConfigItem,
-): Promise<DependencyClient> => {
+const initializeDependency = async (config: DependencyConfigItem): Promise<DependencyClient> => {
   switch (config.type) {
     case DependencyType.DB_POSTGRESQL:
       return await initializePostgresDependency(config);
@@ -28,10 +26,7 @@ const initializeDependencies = async (): Promise<void> => {
   dependencies = new Map<DependencyName, DependencyClient>();
 
   for (const [name, config] of entries) {
-    dependencies.set(
-      name as DependencyName,
-      await initializeDependency(config),
-    );
+    dependencies.set(name as DependencyName, await initializeDependency(config));
   }
 };
 
@@ -39,9 +34,7 @@ const closeDependencies = async (): Promise<void> => {
   if (dependencies === undefined) {
     return;
   }
-  await Promise.all(
-    [...dependencies.values()].map((dependency) => dependency.close()),
-  );
+  await Promise.all([...dependencies.values()].map((dependency) => dependency.close()));
   dependencies = undefined;
 };
 
