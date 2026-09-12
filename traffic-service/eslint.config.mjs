@@ -1,11 +1,11 @@
-import js from "@eslint/js";
-import { defineConfig } from "eslint/config";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig({
-  files: ["**/*.ts"],
+  files: ['**/*.ts'],
   extends: [js.configs.recommended, tseslint.configs.recommended],
   rules: {
-    "no-duplicate-imports": "error",
+    'no-duplicate-imports': 'error',
   },
 });

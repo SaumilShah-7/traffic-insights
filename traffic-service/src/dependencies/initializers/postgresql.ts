@@ -1,10 +1,10 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import {
   DependencyType,
   PostgresDependencyClient,
   PostgresDependencyConfig,
-} from "../interface";
+} from '../interface';
 
 const initializePostgresDependency = async (
   config: PostgresDependencyConfig,
@@ -14,7 +14,7 @@ const initializePostgresDependency = async (
 
   if (!username || !password) {
     throw new Error(
-      "POSTGRESQL_USERNAME and POSTGRESQL_PASSWORD environment variables are required",
+      'POSTGRESQL_USERNAME and POSTGRESQL_PASSWORD environment variables are required',
     );
   }
 
@@ -31,12 +31,12 @@ const initializePostgresDependency = async (
     idleTimeoutMillis: config.idleTimeoutMs,
   });
 
-  pool.on("error", (error: Error) => {
-    console.error("Unexpected PostgreSQL idle connection error", error);
+  pool.on('error', (error: Error) => {
+    console.error('Unexpected PostgreSQL idle connection error', error);
   });
 
   try {
-    await pool.query("SELECT 1");
+    await pool.query('SELECT 1');
   } catch (error) {
     await pool.end();
     throw error;

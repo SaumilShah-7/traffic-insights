@@ -1,12 +1,12 @@
-import { getDependencyConfig } from "./config";
-import { initializePostgresDependency } from "./initializers/postgresql";
+import { getDependencyConfig } from './config';
+import { initializePostgresDependency } from './initializers/postgresql';
 import {
   Dependencies,
   DependencyClient,
   DependencyConfigItem,
   DependencyName,
   DependencyType,
-} from "./interface";
+} from './interface';
 
 let dependencies: Dependencies | undefined;
 
@@ -47,7 +47,7 @@ const closeDependencies = async (): Promise<void> => {
 
 const getDependency = (name: DependencyName): DependencyClient => {
   if (dependencies === undefined) {
-    throw new Error("Dependencies have not been initialized");
+    throw new Error('Dependencies have not been initialized');
   }
   const dependency = dependencies.get(name);
   if (dependency === undefined) {

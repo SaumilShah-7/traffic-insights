@@ -1,11 +1,11 @@
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 enum DependencyType {
-  DB_POSTGRESQL = "db_postgresql",
+  DB_POSTGRESQL = 'db_postgresql',
 }
 
 enum DependencyName {
-  TRAFFIC_POSTGRESQL = "traffic-postgresql",
+  TRAFFIC_POSTGRESQL = 'traffic-postgresql',
 }
 
 interface PostgresDependencyConfig {
