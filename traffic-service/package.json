@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node --env-file-if-exists=.env dist/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
@@ -17,11 +17,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "fastify": "^5.12.4"
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.12.4",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.2",
+    "@types/pg": "^8.23.1",
     "eslint": "^10.10.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.13",
