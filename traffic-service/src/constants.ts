@@ -1,4 +1,5 @@
 // ISO 3166 alpha-2 country codes as per: https://www.iban.com/country-codes
+// supporting 20 country codes for simplicity
 enum CountryCode {
   AE = 'AE',
   AU = 'AU',
