@@ -1,12 +1,10 @@
-describe("dummy", () => {
-  beforeEach(() => {
-  });
+describe('dummy', () => {
+  beforeEach(() => {});
 
-  afterEach(async () => {
-  });
+  afterEach(async () => {});
 
-  it("dummy UT", async () => {
-    const x = 1+1
+  it('dummy UT', async () => {
+    const x = 1 + 1;
 
     expect(x).toBe(2);
   });
