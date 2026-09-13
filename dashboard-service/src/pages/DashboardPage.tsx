@@ -100,7 +100,7 @@ const DashboardPage = () => {
         <TrafficChart
           title="Country metrics"
           data={countryData}
-          categoryKey="countryName"
+          categoryKey="countryKey"
           metric={countryMetric}
           onMetricChange={setCountryMetric}
           isLoading={isCountryLoading}

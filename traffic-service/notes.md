@@ -37,6 +37,8 @@ ON traffic_data (date);
 health check
 service level db + auth
 in memory cache with cache aside pattern
+fastify ajv for schema validation
+generate data for 
 
 ---
 

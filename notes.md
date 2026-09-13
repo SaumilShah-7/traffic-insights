@@ -16,6 +16,9 @@ kubectl create secret generic traffic-service-secret \
 kubectl apply -f k8s/traffic-service-deployment.yaml
 
 minikube service traffic-service --url
+minikube service dashboard-service --url
+
+minikube stop
 
 kubectl rollout restart deployment/traffic-deployment
 

@@ -1,4 +1,4 @@
-import { and, gte, lt, sum } from 'drizzle-orm';
+import { and, eq, gte, lt, sum } from 'drizzle-orm';
 import { addMonths, format } from 'date-fns';
 import { getDependency } from '../../dependencies';
 import { DependencyName } from '../../dependencies/interface';
@@ -36,6 +36,21 @@ const insertTrafficData = async (dataPoints: TrafficDataDocument[]): Promise<voi
     .onConflictDoNothing({
       target: [trafficData.countryCode, trafficData.vehicleType, trafficData.date],
     });
+};
+
+const updateTrafficData = async (dataPoint: TrafficDataDocument): Promise<void> => {
+  const { countryCode, vehicleType, date, ...metrics } = dataPoint;
+  const { database } = getDependency(DependencyName.TRAFFIC_POSTGRESQL);
+  await database
+    .update(trafficData)
+    .set(metrics)
+    .where(
+      and(
+        eq(trafficData.countryCode, countryCode),
+        eq(trafficData.vehicleType, vehicleType),
+        eq(trafficData.date, date),
+      ),
+    );
 };
 
 const getMonthDateRange = (
@@ -77,6 +92,29 @@ const getCountryWiseTrafficMetrics = async (
   );
 };
 
+const getTrafficData = async (
+  countryCode: TrafficDataDocument['countryCode'],
+  vehicleType: TrafficDataDocument['vehicleType'],
+  year: number,
+  month: number,
+): Promise<TrafficDataDocument[]> => {
+  const { database } = getDependency(DependencyName.TRAFFIC_POSTGRESQL);
+  const { monthStartDate, nextMonthStartDate } = getMonthDateRange(year, month);
+
+  return database
+    .select()
+    .from(trafficData)
+    .where(
+      and(
+        eq(trafficData.countryCode, countryCode),
+        eq(trafficData.vehicleType, vehicleType),
+        gte(trafficData.date, monthStartDate),
+        lt(trafficData.date, nextMonthStartDate),
+      ),
+    )
+    .orderBy(trafficData.date);
+};
+
 const getVehicleWiseTrafficMetrics = async (
   year: number,
   month: number,
@@ -103,4 +141,10 @@ const getVehicleWiseTrafficMetrics = async (
   );
 };
 
-export { getCountryWiseTrafficMetrics, getVehicleWiseTrafficMetrics, insertTrafficData };
+export {
+  getCountryWiseTrafficMetrics,
+  getTrafficData,
+  getVehicleWiseTrafficMetrics,
+  insertTrafficData,
+  updateTrafficData,
+};

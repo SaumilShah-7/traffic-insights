@@ -29,11 +29,13 @@ const insertTrafficBodySchema = {
     data: {
       type: 'array',
       minItems: 1,
-      maxItems: 500,
+      maxItems: 100,
       items: trafficDataItemSchema,
     },
   },
 };
+
+const updateTrafficBodySchema = trafficDataItemSchema;
 
 const getCountryWiseTrafficMetricsQuerySchema = {
   type: 'object',
@@ -54,8 +56,29 @@ const getCountryWiseTrafficMetricsQuerySchema = {
 
 const getVehicleWiseTrafficMetricsQuerySchema = getCountryWiseTrafficMetricsQuerySchema;
 
+const getTrafficDataQuerySchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['countryCode', 'vehicleType', 'year', 'month'],
+  properties: {
+    countryCode: { type: 'string', enum: Object.values(CountryCode) },
+    vehicleType: { type: 'string', enum: Object.values(VehicleType) },
+    year: {
+      type: 'integer',
+      minimum: 1,
+    },
+    month: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 12,
+    },
+  },
+};
+
 export {
   getCountryWiseTrafficMetricsQuerySchema,
+  getTrafficDataQuerySchema,
   getVehicleWiseTrafficMetricsQuerySchema,
   insertTrafficBodySchema,
+  updateTrafficBodySchema,
 };

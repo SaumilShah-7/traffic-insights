@@ -12,9 +12,10 @@ import {
   CountryTrafficMetrics,
   VehicleTrafficMetrics,
 } from '../api/traffic-service/interface';
+import { capitalize } from '../utils';
 
 type TrafficChartData = CountryTrafficMetrics | VehicleTrafficMetrics;
-type CategoryKey = 'countryName' | 'vehicleName';
+type CategoryKey = 'countryKey' | 'vehicleName';
 
 interface TrafficChartProps {
   title: string;
@@ -93,6 +94,9 @@ const TrafficChart = ({
                 dataKey={categoryKey}
                 axisLine={false}
                 tickLine={false}
+                tickFormatter={(value: string) =>
+                  categoryKey === 'vehicleName' ? capitalize(value) : value
+                }
                 tick={{ fill: '#667085', fontSize: 12 }}
                 dy={8}
               />

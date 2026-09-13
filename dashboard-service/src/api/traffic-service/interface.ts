@@ -4,6 +4,29 @@ interface TrafficMetrics {
   totalTravelTimeHours: number;
 }
 
+interface CountryFilterOption {
+  countryCode: string;
+  countryName: string;
+}
+
+interface TrafficDataFilterOptions {
+  countries: CountryFilterOption[];
+  vehicleTypes: string[];
+}
+
+interface TrafficDataFilters {
+  countryCode: string;
+  vehicleType: string;
+  year: number;
+  month: number;
+}
+
+interface TrafficDataRecord extends TrafficMetrics {
+  countryCode: string;
+  vehicleType: string;
+  date: string;
+}
+
 interface CountryTrafficMetrics extends TrafficMetrics {
   countryKey: string;
   countryName: string;
@@ -19,7 +42,11 @@ interface TrafficResponse<T extends TrafficMetrics> {
 }
 
 export {
+  CountryFilterOption,
   CountryTrafficMetrics,
+  TrafficDataFilterOptions,
+  TrafficDataFilters,
+  TrafficDataRecord,
   TrafficMetrics,
   TrafficResponse,
   VehicleTrafficMetrics,
