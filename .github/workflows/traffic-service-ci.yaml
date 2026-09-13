@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "traffic-service/**"
-      - ".github/workflows/traffic-service-ci.yml"
+      - ".github/workflows/traffic-service-ci.yaml"
 
   workflow_dispatch:
 
