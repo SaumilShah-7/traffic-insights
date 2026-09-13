@@ -34,6 +34,12 @@ ON traffic_data (date);
 
 ---
 
+health check
+service level db + auth
+in memory cache with cache aside pattern
+
+---
+
 TO-DO :
 batching support during insert - any dead lock possible ?
 insert api returns success even if conflict

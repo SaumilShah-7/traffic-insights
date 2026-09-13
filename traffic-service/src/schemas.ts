@@ -29,7 +29,7 @@ const insertTrafficBodySchema = {
     data: {
       type: 'array',
       minItems: 1,
-      maxItems: 100,
+      maxItems: 500,
       items: trafficDataItemSchema,
     },
   },
