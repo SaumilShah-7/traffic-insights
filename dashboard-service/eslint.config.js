@@ -22,4 +22,10 @@ export default defineConfig([
       'no-duplicate-imports': 'error',
     },
   },
+  {
+    files: ['tests/**/*.ts'],
+    languageOptions: {
+      globals: globals.jest,
+    },
+  },
 ]);
