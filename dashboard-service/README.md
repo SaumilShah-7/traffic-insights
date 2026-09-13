@@ -1,4 +1,5 @@
 # Dashboard Service
+Serves as React app for the `Traffic Insights` dashboard.
 
 ## Key features
 
