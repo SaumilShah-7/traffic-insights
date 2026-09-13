@@ -38,15 +38,16 @@ const insertTrafficBodySchema = {
 const getCountryWiseTrafficMetricsQuerySchema = {
   type: 'object',
   additionalProperties: false,
-  required: ['year'],
+  required: ['year', 'month'],
   properties: {
-    month: {
-      type: 'string',
-      pattern: '^(?:[1-9]|1[0-2])$',
-    },
     year: {
-      type: 'string',
-      pattern: '^[1-9][0-9]*$',
+      type: 'integer',
+      minimum: 1,
+    },
+    month: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 12,
     },
   },
 };

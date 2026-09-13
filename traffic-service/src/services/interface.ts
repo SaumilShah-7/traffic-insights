@@ -5,7 +5,7 @@ import {
 } from '../db/repositories/interface';
 
 interface InsertTrafficRequest {
-  data: Omit<TrafficDataDocument, 'year' | 'month'>[];
+  data: TrafficDataDocument[];
 }
 
 interface InsertTrafficResponse {
@@ -13,8 +13,8 @@ interface InsertTrafficResponse {
 }
 
 interface GetCountryWiseTrafficMetricsRequest {
-  year: string;
-  month?: string;
+  year: number;
+  month: number;
 }
 
 interface GetCountryWiseTrafficMetricsResponse {
@@ -22,8 +22,8 @@ interface GetCountryWiseTrafficMetricsResponse {
 }
 
 interface GetVehicleWiseTrafficMetricsRequest {
-  year: string;
-  month?: string;
+  year: number;
+  month: number;
 }
 
 interface GetVehicleWiseTrafficMetricsResponse {

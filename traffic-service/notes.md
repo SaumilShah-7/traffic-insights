@@ -20,8 +20,6 @@ CREATE TABLE traffic_data (
 country_code VARCHAR(2) NOT NULL,
 vehicle_type TEXT NOT NULL,
 date DATE NOT NULL,
-year INTEGER NOT NULL,
-month INTEGER NOT NULL,
 vehicle_count INTEGER NOT NULL,
 total_travel_distance_kms INTEGER NOT NULL,
 total_travel_time_hours INTEGER NOT NULL,
@@ -29,8 +27,8 @@ total_travel_time_hours INTEGER NOT NULL,
 PRIMARY KEY (country_code, vehicle_type, date)
 );
 
-CREATE INDEX traffic_data_year_month_idx
-ON traffic_data (year, month);
+CREATE INDEX traffic_data_date_idx
+ON traffic_data (date);
 
 \d traffic_data
 

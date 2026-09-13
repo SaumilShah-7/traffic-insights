@@ -7,15 +7,13 @@ const trafficData = pgTable(
     countryCode: varchar('country_code', { length: 2 }).$type<CountryCode>().notNull(),
     vehicleType: text('vehicle_type').$type<VehicleType>().notNull(),
     date: date('date', { mode: 'string' }).notNull(),
-    year: integer('year').notNull(),
-    month: integer('month').notNull(),
     vehicleCount: integer('vehicle_count').notNull(),
     totalTravelDistanceKms: integer('total_travel_distance_kms').notNull(),
     totalTravelTimeHours: integer('total_travel_time_hours').notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.countryCode, table.vehicleType, table.date] }),
-    index('traffic_data_year_month_idx').on(table.year, table.month),
+    index('traffic_data_date_idx').on(table.date),
   ],
 );
 

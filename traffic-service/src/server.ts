@@ -8,7 +8,6 @@ const app = Fastify({
     customOptions: {
       allErrors: true,
       removeAdditional: false,
-      coerceTypes: false,
     },
   },
 });

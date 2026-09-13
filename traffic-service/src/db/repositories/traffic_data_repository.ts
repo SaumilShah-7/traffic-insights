@@ -1,4 +1,5 @@
-import { and, eq, sum } from 'drizzle-orm';
+import { and, gte, lt, sum } from 'drizzle-orm';
+import { addMonths, format } from 'date-fns';
 import { getDependency } from '../../dependencies';
 import { DependencyName } from '../../dependencies/interface';
 import { COUNTRY_CODE_TO_NAME } from '../../constants';
@@ -10,25 +11,20 @@ import {
 } from './interface';
 
 // keeps first value in case of multiple rows for same country x vehicle type x date
-const deduplicateTrafficData = (
-  dataPoints: Omit<TrafficDataDocument, 'year' | 'month'>[],
-): TrafficDataDocument[] => {
+const deduplicateTrafficData = (dataPoints: TrafficDataDocument[]): TrafficDataDocument[] => {
   const uniqueDataPoints = new Map<string, TrafficDataDocument>();
 
   for (const point of dataPoints) {
     const key = JSON.stringify([point.countryCode, point.vehicleType, point.date]);
     if (!uniqueDataPoints.has(key)) {
-      const [year, month] = point.date.split('-').map(Number);
-      uniqueDataPoints.set(key, { ...point, year, month });
+      uniqueDataPoints.set(key, point);
     }
   }
 
   return [...uniqueDataPoints.values()];
 };
 
-const insertTrafficData = async (
-  dataPoints: Omit<TrafficDataDocument, 'year' | 'month'>[],
-): Promise<void> => {
+const insertTrafficData = async (dataPoints: TrafficDataDocument[]): Promise<void> => {
   if (dataPoints.length === 0) {
     return;
   }
@@ -42,16 +38,25 @@ const insertTrafficData = async (
     });
 };
 
+const getMonthDateRange = (
+  year: number,
+  month: number,
+): { monthStartDate: string; nextMonthStartDate: string } => {
+  const start = new Date(year, month - 1, 1);
+  const end = addMonths(start, 1);
+
+  return {
+    monthStartDate: format(start, 'yyyy-MM-dd'),
+    nextMonthStartDate: format(end, 'yyyy-MM-dd'),
+  };
+};
+
 const getCountryWiseTrafficMetrics = async (
   year: number,
-  month?: number,
+  month: number,
 ): Promise<CountryWiseTrafficMetrics> => {
   const { database } = getDependency(DependencyName.TRAFFIC_POSTGRESQL);
-  const filters = [eq(trafficData.year, year)];
-
-  if (month !== undefined) {
-    filters.push(eq(trafficData.month, month));
-  }
+  const { monthStartDate, nextMonthStartDate } = getMonthDateRange(year, month);
 
   const rows = await database
     .select({
@@ -61,7 +66,7 @@ const getCountryWiseTrafficMetrics = async (
       totalTravelTimeHours: sum(trafficData.totalTravelTimeHours).mapWith(Number),
     })
     .from(trafficData)
-    .where(and(...filters))
+    .where(and(gte(trafficData.date, monthStartDate), lt(trafficData.date, nextMonthStartDate)))
     .groupBy(trafficData.countryCode);
 
   return Object.fromEntries(
@@ -74,14 +79,10 @@ const getCountryWiseTrafficMetrics = async (
 
 const getVehicleWiseTrafficMetrics = async (
   year: number,
-  month?: number,
+  month: number,
 ): Promise<VehicleWiseTrafficMetrics> => {
   const { database } = getDependency(DependencyName.TRAFFIC_POSTGRESQL);
-  const filters = [eq(trafficData.year, year)];
-
-  if (month !== undefined) {
-    filters.push(eq(trafficData.month, month));
-  }
+  const { monthStartDate, nextMonthStartDate } = getMonthDateRange(year, month);
 
   const rows = await database
     .select({
@@ -91,7 +92,7 @@ const getVehicleWiseTrafficMetrics = async (
       totalTravelTimeHours: sum(trafficData.totalTravelTimeHours).mapWith(Number),
     })
     .from(trafficData)
-    .where(and(...filters))
+    .where(and(gte(trafficData.date, monthStartDate), lt(trafficData.date, nextMonthStartDate)))
     .groupBy(trafficData.vehicleType);
 
   return Object.fromEntries(

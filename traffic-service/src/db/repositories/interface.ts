@@ -4,8 +4,6 @@ interface TrafficDataDocument {
   countryCode: CountryCode;
   vehicleType: VehicleType;
   date: string; // YYYY-MM-DD format
-  year: number;
-  month: number;
   vehicleCount: number;
   totalTravelDistanceKms: number;
   totalTravelTimeHours: number;
