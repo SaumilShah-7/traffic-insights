@@ -5,7 +5,7 @@
 Traffic Insights is a dashboard for viewing traffic metrics and records. Its system components include:
  - React frontend (dashboard-service)
  - Fastify API backend (traffic-service)
- - External PostgreSQL database hosted on Render
+ - External PostgreSQL database hosted on Render (to avoid local setup for user, role, db, table, seed data)
 
 ## Dashboard Features
 
