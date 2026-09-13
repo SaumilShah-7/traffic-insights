@@ -1,4 +1,5 @@
 # Traffic Service
+Serves as backend for the `Traffic Insights` dashboard
 
 ## Key Features
 
