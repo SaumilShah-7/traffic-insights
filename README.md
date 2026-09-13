@@ -14,7 +14,7 @@ Traffic Insights is a dashboard for viewing traffic metrics and records. Its sys
 
 ## Assumptions
 
-- Traffic record is unique for a country, vehicle type, and date (composite key). Each record stores vehicle count, total travel distance in kilometres and total travel time in hours
+- Traffic record is unique for a country, vehicle type and date (composite key). Each record stores vehicle count, total travel distance in kilometres and total travel time in hours
 - An external provider sends traffic data in batches over `http://{traffic-service-url}/traffic-data`. These are purely insert ops. Duplicate records with same composite key are to be ignored
 - Workload is primarily read-heavy driven by dashboard queries whereas write workload consisting of traffic data inserts/updates is comparatively low
 
