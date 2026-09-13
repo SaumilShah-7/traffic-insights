@@ -57,6 +57,8 @@ jobs:
 
       - name: Build image
         run: |
+          # GHCR image names must be lowercase, but my github.repository_owner resolves to "SaumilShah-7"
+          # Hence, hard coded in lower case
           docker build -t ghcr.io/saumilshah-7/dashboard-service:${{ github.sha }} -t ghcr.io/saumilshah-7/dashboard-service:latest .
 
       - name: Push image
