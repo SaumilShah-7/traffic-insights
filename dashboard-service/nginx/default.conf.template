@@ -8,7 +8,7 @@ server {
         return 200 "healthy\n";
     }
 
-    location /traffic-data/ {
+    location /traffic-data {
         proxy_pass ${TRAFFIC_SERVICE_URL};
     }
 
