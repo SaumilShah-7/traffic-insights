@@ -5,7 +5,9 @@
 Traffic Insights is a dashboard for viewing traffic metrics and records. Its system components include:
  - React frontend ([dashboard-service](dashboard-service/README.md))
  - Fastify API backend ([traffic-service](traffic-service/README.md))
- - External PostgreSQL database hosted on Render (to avoid local setup for user, role, db, table, seed data)
+ - PostgreSQL database
+   - Hosted on Render's free tier (available until October 13, 2026) with seed data added for August & September 2026
+   - Hosted externally to avoid repeating role, database, table and seed data setup on every new machine
 
 ## Dashboard Features
 
@@ -15,10 +17,10 @@ Traffic Insights is a dashboard for viewing traffic metrics and records. Its sys
 ## Assumptions
 
 - Traffic record is unique for a country, vehicle type and date (composite key). Each record stores vehicle count, total travel distance in kilometres and total travel time in hours
-- An external provider sends traffic data in batches over `http://{traffic-service-url}/traffic-data`. These are purely insert ops. Duplicate records with same composite key are to be ignored
+- An external data provider sends traffic records in batches over `http://{traffic-service-url}/traffic-data`. These are purely insert ops. Duplicate records with same composite key are ignored
 - Workload is primarily read-heavy driven by dashboard queries whereas write workload consisting of traffic data inserts/updates is comparatively low
 
-## Design decisions for 500 read QPS:
+## Design decisions for 500 RPS:
 
 - Traffic metrics are restricted to monthly windows to limit the amount of data scanned
 - Traffic-service (backend) uses an in-memory cache to serve metric queries (TTL: 60 seconds) with cache-aside pattern
@@ -109,4 +111,4 @@ Deployment remains manual because GitHub-hosted runner cannot reach local Miniku
 
 ## Tests
 
-Pending
+Added basic UTs.
