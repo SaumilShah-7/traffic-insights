@@ -1,6 +1,6 @@
 # Traffic Insights
 
-[Assignment brief](https://docs.google.com/document/d/1pYhFJRQEZCgCXNv-Cw_Tb2sR-FpPs_lm2X_uLKOY6po/edit?usp=sharing)
+[Assignment brief](https://drive.google.com/file/d/1Adv1scd5nQPteQi8HykPaFsjRqWD0xDQ/view)
 
 Traffic Insights is a dashboard for viewing traffic metrics and records. Its system components include:
  - React frontend ([dashboard-service](dashboard-service/README.md))
