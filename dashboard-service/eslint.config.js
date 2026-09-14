@@ -23,7 +23,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['tests/**/*.ts'],
+    files: ['tests/**/*.{ts,tsx}'],
     languageOptions: {
       globals: globals.jest,
     },
