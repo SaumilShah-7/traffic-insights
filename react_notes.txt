@@ -1,0 +1,91 @@
+A React functional component written in TSX (TypeScript + JSX (Javscript XML))
+Properties
+useState & useEffect are react hooks
+
+<div> and <p> are HTML elements.
+<DashboardPage /> is a React component.
+
+Semantic HTML: For header, nav, main, section, etc., replacing them with <div> often won't visibly change the page, but it does reduce the semantic/accessibility quality of the HTML.
+
+The parentheses () are just JavaScript grouping.
+
+--------------
+
+State belongs to the component. Props come from the parent.
+
+A component re-renders when
+ - its props change
+ - its state change
+ - its parent re-renders
+ 
+
+Mount:
+Component function runs → JSX rendered/committed → useEffect runs
+
+Re-render (dependencies changed):
+Component function runs again → JSX rendered/committed → previous useEffect cleanup runs → useEffect runs again
+
+component re-renders
+       ↓
+effect dependencies checked
+       ↓
+dependencies changed?
+    ↙          ↘
+  YES           NO
+   ↓             ↓
+cleanup       nothing
+   ↓
+effect
+
+Unmount:
+useEffect cleanup runs → component is removed
+
+CSS ruleset
+│
+├── Selector
+│     └── .period-controls h2
+│
+└── Declaration block
+      │
+      ├── Declaration: margin: 0
+      ├── Declaration: color: #172033
+      ├── Declaration: font-size: var(--font-size-ui)
+      ├── Declaration: font-weight: var(--font-weight-ui)
+      ├── Declaration: line-height: 10
+      └── Declaration: letter-spacing: -0.01em
+
+
+The {} tells JSX: Evaluate what's inside as JavaScript instead of treating it as a string.
+
+
+CSS media query.
+
+
+render phase = run components + calculate the new ui
+Commit phase = applies the necessary changes to the actual DOM.
+
+If the function prop changes, React detects the prop change and re-renders TrafficDataRow, but if the resulting UI is unchanged, there is no DOM mutation during the commit phase.
+
+DOM = Document Object Model
+
+----------------
+
+Changes
+
+- remove role
+- editingdate not required
+- isloadingoptions instead of isloadingfilters
+- hasFetchError instead of fetchError
+- jsx expression instaead of jsx string literals
+- direct function reference
+- draft - split into draft (row state) & editingDate (table state): The re-render point I made earlier stands and is the real benefit: the table stops receiving in-progress values, so it isn't re-rendered on every keystroke. The API tidying is a rounding error, not a reason to do it.
+- removed .top-nav button:hover:not(:disabled)
+- isUpdating to dictate disabled state for action buttons of each row 
+- UTs: add aria-label to refer, waitFor only for async ops
+
+---------
+
+
+dist/index.html                      ← index.html with hashed asset tags injected
+dist/assets/index-<hash>.js          ← all app + React + Recharts code, bundled/minified
+dist/assets/index-<hash>.css         ← extracted, minified styles

@@ -1,0 +1,265 @@
+minikube start
+minikube status
+
+minikube ssh -- nproc    
+minikube ssh -- sh -c 'echo CPUs: $(nproc); echo; free -h'
+
+---------------------
+
+A container is an isolated process environment created by the operating system, where the process gets its own view of system resources through namespaces and controlled access to resources through cgroups, while sharing the host's kernel.
+
+Container A
+│
+├── PID namespace
+│    └── sees its own processes
+│
+├── Network namespace
+│    └── sees its own eth0, IP, ports
+│
+├── Mount namespace
+│    └── sees its own filesystem
+│
+├── UTS namespace
+│    └── sees its own hostname
+│
+├── Environment
+│    ├── PORT=3000
+│    ├── DB_HOST=postgres
+│    └── ENV=production
+│
+└── cgroup
+    ├── CPU limit: 2 CPUs
+    ├── Memory limit: 512 MB
+    └── Process limit: 100
+
+
+Kubernetes Node
+    │
+    ├── could be a physical server
+    ├── could be a VM
+    └── could be a container (your Minikube case)
+
+Node
+│
+└── Pod
+     │
+     └── Container
+          │
+          └── Process
+
+A Pod is a group of one or more containers that Kubernetes manages as a single unit, giving them a shared network identity and optionally shared storage, with a common lifecycle.
+ - A standalone container gets its own network namespace. But containers in the same Kubernetes Pod share one network namespace.
+
+
+
+Deployment = manage application versions
+ReplicaSet = maintain the number of Pods
+Service = provide stable networking to those Pods
+
+Deployment
+└── traffic-deployment
+
+    └── ReplicaSet
+        └── traffic-deployment-<hash>
+
+            └── Pod
+                └── traffic-deployment-<hash>-<random>
+
+                    └── Container
+                        └── traffic-container
+
+
+Service
+└── traffic-service
+
+
+---------------
+
+kubectl get nodes
+
+Minikube node
+│
+├── Node-level processes
+│   ├── kubelet
+│   └── containerd
+│
+├── System Pods
+│   └── kube-proxy
+│
+├── Control-plane Pods
+│   ├── kube-apiserver
+│   ├── etcd
+│   ├── kube-scheduler
+│   └── kube-controller-manager
+│
+└── Application Pods
+    ├── traffic-service
+    └── dashboard
+
+
+kubectl config view -> gives kubeconfig
+
+apiVersion: v1
+kind: Config
+
+clusters:
+  - name: minikube
+    cluster:
+      certificate-authority: /Users/saumil/.minikube/ca.crt
+      server: https://127.0.0.1:61442
+
+contexts:
+  - name: minikube
+    context:
+      cluster: minikube
+      namespace: default
+      user: minikube
+
+current-context: minikube
+
+users:
+  - name: minikube
+    user:
+      client-certificate: /Users/saumil/.minikube/profiles/minikube/client.crt
+      client-key: /Users/saumil/.minikube/profiles/minikube/client.key
+
+
+kube-apiserver
+ - Serve: exposes the Kubernetes REST API as the single entry point for every client (kubectl, controllers, scheduler, kubelets).
+ - Secure: authenticates who is calling and authorizes whether they're allowed to do it (e.g., RBAC).
+ - Admit: runs admission controllers and schema validation to mutate or reject objects before they're accepted.
+ - Persist: writes and reads cluster state in etcd, which no other component touches directly.
+ - Notify: streams changes to watchers so controllers, schedulers and kubelets can react and reconcile
+
+etcd
+ - Distributed key-value store — etcd is a strongly consistent key-value database; multiple etcd instances use Raft to maintain a consistent state.
+ - Stores cluster state — stores Kubernetes resources such as Deployments, Pods, Services, Secrets, ConfigMaps, and RBAC objects; built-in Kubernetes objects are typically stored as Protocol Buffers, while CRDs are stored as JSON.
+ - Source of truth — etcd is the authoritative persistent state that the Kubernetes control plane reads and updates.
+
+kube-controller-manager
+
+Desired state → stored in etcd, primarily in the resource's spec.
+Observed/recorded state → stored in etcd, primarily in the resource's status.
+Controller → watches the API server for changes to spec and status, compares desired vs observed state, and reconciles the difference.
+
+ - Bundle controllers: Runs many core Kubernetes controllers in a single process, such as Deployment, ReplicaSet, Job, Node, Namespace, and ServiceAccount controllers.
+ - Reconcile workloads: Continuously compares the desired state with the observed cluster state and takes action to bring them in sync. For example, ensures a Deployment has the required number of Pods.
+ - Monitor nodes: Watches node health and heartbeats, marks unhealthy nodes, and handles Pods on nodes that become unavailable.
+ - Handle cluster bookkeeping: Performs tasks such as creating default ServiceAccounts, garbage-collecting objects, cleaning up namespaces, and maintaining EndpointSlices.
+ - Leader election: Allows multiple kube-controller-manager instances for high availability, while ensuring only one instance actively runs the controllers at a time using a Lease.
+
+kube-scheduler
+ - Watch for unscheduled Pods: Watches the API Server for newly created Pods that don't have a node assigned yet.
+ - Filter nodes: Eliminates nodes where the Pod cannot run based on constraints such as CPU/memory capacity, taints/tolerations, node selectors, affinity rules, and volume requirements.
+ - Score remaining nodes: Ranks the nodes that passed filtering based on factors such as resource availability, affinity preferences, and spreading Pods across nodes.
+ - Assign the Pod to a node: Selects the highest-scoring suitable node and records the node assignment for the Pod through the API Server.
+
+kubelet
+ - Run Pods — ensures Pods assigned to its node are created and running via the container runtime.
+ - Monitor Pods — continuously checks container health and restarts containers when needed.
+ - Report status — reports Pod and node health/status back to the API server.
+
+kube-proxy
+- Implements Service networking — makes a Kubernetes Service IP route traffic to the appropriate backend Pods.
+
+
+types of Services
+ClusterIP: ClusterIP:Port → Pod IP:PodPort
+NodePort: NodeIP:NodePort → ClusterIP:Port → Pod IP:PodPort
+LoadBalancer: External LB LBIP:LBPort → NodeIP:NodePort → ClusterIP:Port → Pod IP:PodPort
+
+--------------
+
+deployment:
+ - maxSurge
+ - maxUnavailable
+
+Readiness: after failureThreshold consecutive failures → Pod becomes NotReady → removed from Service traffic.
+Liveness: after failureThreshold consecutive failures → kubelet kills and restarts the container.
+
+logs - what container says
+events - what k8 says about its resource
+
+
+ConfigMap: Stores key-value configuration; shows the values upon describe
+Secret: Stores sensitive key-value data; hides the values upon describe
+Default behavior: ConfigMap values are plain text; Secret values are base64-encoded & not encrypted
+
+-------------
+
+debugging
+
+kubectl apply -f k8s/dashboard-service-deployment.yaml
+
+kubectl get pods -l app=traffic-pods -o wide
+kubectl describe pods traffic-deployment-589df9478d 
+
+kubectl rollout status deployment/dashboard-deployment
+kubectl rollout restart deployment/dashboard-deployment
+
+kubectl delete deployment traffic-deployment
+kubectl delete service traffic-service
+
+kubectl logs deployment/dashboard-deployment --tail=50
+
+
+--------------
+
+kubectl get pods -n kube-system
+
+Static Pod: A Pod managed directly by the kubelet on a specific node from a local Pod manifest, rather than by the Kubernetes control plane.
+Used mainly for critical control-plane components (kube-apiserver, etcd, kube-scheduler, kube-controller-manager) that need to run during cluster bootstrap.
+
+DaemonSet: A Kubernetes workload that ensures one instance of a Pod runs on every eligible node.
+
+CNI
+ - Every pod gets its own unique IP, and any pod can reach any other pod, on any node, directly by that IP without NAT. Kubernetes doesn't say how to achieve this. The CNI plugin decides.
+ - Each node owns a block of pod IPs. When a pod starts, it gets an IP from its node's block, and every other node already has a route saying "that block lives on that node." So a new pod needs no routing update anywhere else
+ - when a new pod starts:
+    - Allocate an IP. It calls its IPAM, for example host-local, to reserve a free IP from this node's range.
+    - Create a veth pair. It moves one end into the pod's network namespace and renames it eth0. The other end stays on the host, named something like veth… or cali….
+    - Configure inside the pod. It assigns the IP to eth0, sets the MTU, brings the interface up, and adds a default route.
+    - Configure on the host. It adds a route telling the host that traffic for the pod IP should go through the pod's host-side veth, e.g. 10.244.1.5 dev cali3f2a1b
+
+Pod namespace                         Host namespace
+
+10.244.1.5                           route:
+     │                                10.244.1.5
+   eth0                                  ↓
+     │                              cali3f2a1b
+     │                                  │
+     └────────── veth pair ─────────────┘
+
+
+coredns : maps dns name to clusterIP
+
+
+Kubernetes cluster
+│
+├── Control-plane node  (tainted: NoSchedule)
+│   ├── kubelet
+│   ├── containerd
+│   │
+│   ├── kube-apiserver Pod        (static pod)
+│   ├── etcd Pod                  (static pod, or external)
+│   ├── kube-scheduler Pod        (static pod)
+│   ├── kube-controller-manager Pod (static pod)
+│   ├── kube-proxy Pod            (DaemonSet)
+│   └── CNI Pod                   (DaemonSet)
+│
+├── Worker node
+│   ├── kubelet
+│   ├── containerd
+│   │
+│   ├── kube-proxy Pod            (DaemonSet)
+│   ├── CNI Pod                   (DaemonSet)
+│   ├── CoreDNS Pod               (Deployment, some nodes)
+│   └── Application Pods
+│
+└── Worker node
+    ├── kubelet
+    ├── containerd
+    │
+    ├── kube-proxy Pod
+    ├── CNI Pod
+    └── Application Pods
