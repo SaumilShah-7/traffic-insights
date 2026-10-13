@@ -68,6 +68,7 @@ Run the following commands from repository root:
 ```bash
 open -a Docker
 minikube start --driver=docker
+minikube addons enable metrics-server
 
 kubectl create secret generic traffic-service-secret \
   --from-env-file=traffic-service/.env
@@ -76,6 +77,7 @@ kubectl apply -f k8s/apps/overlays/development/environment-config.yaml
 
 kubectl apply -k k8s/apps/overlays/development/traffic-service
 kubectl rollout status deployment/traffic-deployment
+kubectl get hpa traffic-deployment-hpa --watch
 
 kubectl apply -k k8s/apps/overlays/development/dashboard-service
 kubectl rollout status deployment/dashboard-deployment
