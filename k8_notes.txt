@@ -294,3 +294,12 @@ Minikube Node
     ├── traffic-service
     └── dashboard
 
+-----------
+
+Emissary pod:
+ - diagd process (control plane / controller): Watches Kubernetes resources such as Listener, Host and Mapping, and generates configuration for Envoy.
+ - envoy process (data plane): Uses that configuration to handle incoming requests and forward them to backend Services.
+
+Emissary by default has following configuration:
+ - HTTP: Service port 80 → Pod target port 8080
+ - HTTPS: Service port 443 → Pod target port 8443
