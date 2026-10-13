@@ -72,30 +72,9 @@ Deployment
 Service
 └── traffic-service
 
-
 ---------------
 
 kubectl get nodes
-
-Minikube node
-│
-├── Node-level processes
-│   ├── kubelet
-│   └── containerd
-│
-├── System Pods
-│   └── kube-proxy
-│
-├── Control-plane Pods
-│   ├── kube-apiserver
-│   ├── etcd
-│   ├── kube-scheduler
-│   └── kube-controller-manager
-│
-└── Application Pods
-    ├── traffic-service
-    └── dashboard
-
 
 kubectl config view -> gives kubeconfig
 
@@ -126,7 +105,7 @@ users:
 
 kube-apiserver
  - Serve: exposes the Kubernetes REST API as the single entry point for every client (kubectl, controllers, scheduler, kubelets).
- - Secure: authenticates who is calling and authorizes whether they're allowed to do it (e.g., RBAC).
+ - Secure: authenticates who is calling and authorizes whether they're allowed to do it via RBAC (identity extracted from client.crt, then identity -> role mapping happens).
  - Admit: runs admission controllers and schema validation to mutate or reject objects before they're accepted.
  - Persist: writes and reads cluster state in etcd, which no other component touches directly.
  - Notify: streams changes to watchers so controllers, schedulers and kubelets can react and reconcile
@@ -164,9 +143,9 @@ kube-proxy
 
 
 types of Services
-ClusterIP: ClusterIP:Port → Pod IP:PodPort
-NodePort: NodeIP:NodePort → ClusterIP:Port → Pod IP:PodPort
-LoadBalancer: External LB LBIP:LBPort → NodeIP:NodePort → ClusterIP:Port → Pod IP:PodPort
+ClusterIP: ClusterIP:ServicePort → Pod IP:PodPort
+NodePort: NodeIP:NodePort → ClusterIP:ServicePort → Pod IP:PodPort
+LoadBalancer: External LB LBIP:LBPort → NodeIP:NodePort → ClusterIP:ServicePort → Pod IP:PodPort
 
 --------------
 
@@ -176,6 +155,8 @@ deployment:
 
 Readiness: after failureThreshold consecutive failures → Pod becomes NotReady → removed from Service traffic.
 Liveness: after failureThreshold consecutive failures → kubelet kills and restarts the container.
+
+a liveness failure does not directly set the Pod's Ready condition to False. Rather, the container restart and its resulting state prevent the Pod from being ready. Once the container restarts and passes its readiness checks, the Pod can become Ready again
 
 logs - what container says
 events - what k8 says about its resource
@@ -189,18 +170,20 @@ Default behavior: ConfigMap values are plain text; Secret values are base64-enco
 
 debugging
 
+minikube service traffic-service --url
+
 kubectl apply -f k8s/dashboard-service-deployment.yaml
 
 kubectl get pods -l app=traffic-pods -o wide
-kubectl describe pods traffic-deployment-589df9478d 
+kubectl describe pod traffic-deployment-589df9478d (gives k8 events)
 
-kubectl rollout status deployment/dashboard-deployment
-kubectl rollout restart deployment/dashboard-deployment
+kubectl rollout status deployment dashboard-deployment
+kubectl rollout restart deployment dashboard-deployment
 
 kubectl delete deployment traffic-deployment
 kubectl delete service traffic-service
 
-kubectl logs deployment/dashboard-deployment --tail=50
+kubectl logs deployment/dashboard-deployment --tail=50 (gives application logs)
 
 
 --------------
@@ -234,32 +217,80 @@ Pod namespace                         Host namespace
 coredns : maps dns name to clusterIP
 
 
-Kubernetes cluster
+
+Kubernetes Cluster
 │
-├── Control-plane node  (tainted: NoSchedule)
-│   ├── kubelet
-│   ├── containerd
+├── Control-plane Node (taint: NoSchedule)
 │   │
-│   ├── kube-apiserver Pod        (static pod)
-│   ├── etcd Pod                  (static pod, or external)
-│   ├── kube-scheduler Pod        (static pod)
-│   ├── kube-controller-manager Pod (static pod)
-│   ├── kube-proxy Pod            (DaemonSet)
-│   └── CNI Pod                   (DaemonSet)
+│   ├── Node-level components
+│   │   ├── kubelet
+│   │   └── containerd
+│   │
+│   ├── Networking components
+│   │   ├── kube-proxy Pod (DaemonSet, if used)
+│   │   └── CNI agent Pod (DaemonSet, implementation-dependent)
+│   │
+│   ├── Cluster add-ons
+│   │   └── CoreDNS Pod (Deployment, if scheduled here)
+│   │
+│   └── Control-plane components (static Pods)
+│       ├── kube-apiserver
+│       ├── etcd (or external etcd)
+│       ├── kube-controller-manager
+│       └── kube-scheduler
 │
-├── Worker node
-│   ├── kubelet
-│   ├── containerd
+├── Worker Node
 │   │
-│   ├── kube-proxy Pod            (DaemonSet)
-│   ├── CNI Pod                   (DaemonSet)
-│   ├── CoreDNS Pod               (Deployment, some nodes)
+│   ├── Node-level components
+│   │   ├── kubelet
+│   │   └── containerd
+│   │
+│   ├── Networking components
+│   │   ├── kube-proxy Pod (DaemonSet, if used)
+│   │   └── CNI agent Pod (DaemonSet, implementation-dependent)
+│   │
+│   ├── Cluster add-ons
+│   │   └── CoreDNS Pod (Deployment, if scheduled here)
+│   │
 │   └── Application Pods
 │
-└── Worker node
-    ├── kubelet
-    ├── containerd
+└── Worker Node
     │
-    ├── kube-proxy Pod
-    ├── CNI Pod
+    ├── Node-level components
+    │   ├── kubelet
+    │   └── containerd
+    │
+    ├── Networking components
+    │   ├── kube-proxy Pod (DaemonSet, if used)
+    │   └── CNI agent Pod (DaemonSet, implementation-dependent)
+    │
+    ├── Cluster add-ons
+    │   └── CoreDNS Pod (Deployment, if scheduled here)
+    │
     └── Application Pods
+
+
+
+Minikube Node
+│
+├── Node-level processes
+│   ├── kubelet
+│   └── containerd
+│
+├── Networking Pods
+│   ├── kube-proxy (DaemonSet, if enabled)
+│   └── CNI agent (implementation-dependent)
+│
+├── Cluster add-on Pods
+│   └── CoreDNS (Deployment)
+│
+├── Control-plane Pods (static Pods)
+│   ├── kube-apiserver
+│   ├── etcd
+│   ├── kube-scheduler
+│   └── kube-controller-manager
+│
+└── Application Pods
+    ├── traffic-service
+    └── dashboard
+

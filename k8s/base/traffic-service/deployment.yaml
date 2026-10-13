@@ -5,7 +5,6 @@ metadata:
   labels:
     app: traffic-deployment
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: traffic-pods
@@ -22,18 +21,15 @@ spec:
             - name: http
               containerPort: 7777
           envFrom:
+            - configMapRef:
+                name: traffic-service-config
+            - configMapRef:
+                name: environment-config
             - secretRef:
                 name: traffic-service-secret
           env:
             - name: PORT
               value: "7777"
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
           readinessProbe:
             httpGet:
               path: /health

@@ -5,7 +5,6 @@ metadata:
   labels:
     app: dashboard-deployment
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: dashboard-pods
@@ -21,18 +20,16 @@ spec:
           ports:
             - name: http
               containerPort: 9999
+          envFrom:
+            - configMapRef:
+                name: dashboard-service-config
+            - configMapRef:
+                name: environment-config
           env:
             - name: PORT
               value: "9999"
             - name: TRAFFIC_SERVICE_URL
               value: http://traffic-service:7777
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
           readinessProbe:
             httpGet:
               path: /health
