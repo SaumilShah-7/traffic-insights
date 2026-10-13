@@ -2,7 +2,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === 'development' ? '/' : '/dashboard/',
   plugins: [react()],
   server: {
     host: '0.0.0.0',
@@ -18,4 +19,4 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 9999,
   },
-});
+}));

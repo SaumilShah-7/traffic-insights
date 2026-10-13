@@ -1,0 +1,19 @@
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: dashboard-mapping
+spec:
+  hostname: "*"
+  prefix: /dashboard/
+  rewrite: /
+  service: dashboard-service:9999
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: traffic-mapping
+spec:
+  hostname: "*"
+  prefix: /traffic/
+  rewrite: /traffic-data/
+  service: traffic-service:7777

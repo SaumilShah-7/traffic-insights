@@ -1,35 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traffic-deployment
+  name: dashboard-deployment
   labels:
-    app: traffic-deployment
+    app: dashboard-deployment
 spec:
   selector:
     matchLabels:
-      app: traffic-pods
+      app: dashboard-pods
   template:
     metadata:
       labels:
-        app: traffic-pods
+        app: dashboard-pods
     spec:
       containers:
-        - name: traffic-service
-          image: ghcr.io/saumilshah-7/traffic-service:latest
+        - name: dashboard-service
+          image: ghcr.io/saumilshah-7/dashboard-service:latest
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 7777
+              containerPort: 9999
           envFrom:
             - configMapRef:
-                name: traffic-service-config
+                name: dashboard-service-config
             - configMapRef:
                 name: environment-config
-            - secretRef:
-                name: traffic-service-secret
           env:
             - name: PORT
-              value: "7777"
+              value: "9999"
+            - name: TRAFFIC_SERVICE_URL
+              value: http://traffic-service:7777
           readinessProbe:
             httpGet:
               path: /health
@@ -46,12 +46,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: traffic-service
+  name: dashboard-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: traffic-pods
+    app: dashboard-pods
   ports:
     - name: http
-      port: 7777
+      port: 9999
       targetPort: http
