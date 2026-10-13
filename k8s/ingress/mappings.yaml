@@ -14,6 +14,6 @@ metadata:
   name: traffic-mapping
 spec:
   hostname: "*"
-  prefix: /traffic/
-  rewrite: /traffic-data/
+  prefix: /traffic-data
+  rewrite: /traffic-data
   service: traffic-service:7777
