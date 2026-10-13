@@ -72,10 +72,12 @@ minikube start --driver=docker
 kubectl create secret generic traffic-service-secret \
   --from-env-file=traffic-service/.env
 
-kubectl apply -f k8s/traffic-service-deployment.yaml
+kubectl apply -f k8s/overlays/development/environment-config.yaml
+
+kubectl apply -k k8s/overlays/development/traffic-service
 kubectl rollout status deployment/traffic-deployment
 
-kubectl apply -f k8s/dashboard-service-deployment.yaml
+kubectl apply -k k8s/overlays/development/dashboard-service
 kubectl rollout status deployment/dashboard-deployment
 ```
 
