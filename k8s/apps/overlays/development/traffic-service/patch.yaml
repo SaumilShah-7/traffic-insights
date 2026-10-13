@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: traffic-deployment
 spec:
-  replicas: 1
+  replicas: 2
   template:
     spec:
       containers:

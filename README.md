@@ -17,7 +17,7 @@ Traffic Insights is a dashboard for viewing traffic metrics and records. Its sys
 ## Assumptions
 
 - Traffic record is unique for a country, vehicle type and date (composite key). Each record stores vehicle count, total travel distance in kilometres and total travel time in hours
-- An external data provider sends traffic records in batches over `http://{traffic-service-url}/traffic-data`. These are purely insert ops. Duplicate records with same composite key are ignored
+- An external data provider sends traffic records in batches over `http://{gateway-url}/traffic-data`. These are purely insert ops. Duplicate records with same composite key are ignored
 - Workload is primarily read-heavy driven by dashboard queries whereas write workload consisting of traffic data inserts/updates is comparatively low
 
 ## Design decisions for 500 RPS:
@@ -72,26 +72,40 @@ minikube start --driver=docker
 kubectl create secret generic traffic-service-secret \
   --from-env-file=traffic-service/.env
 
-kubectl apply -f k8s/overlays/development/environment-config.yaml
+kubectl apply -f k8s/apps/overlays/development/environment-config.yaml
 
-kubectl apply -k k8s/overlays/development/traffic-service
+kubectl apply -k k8s/apps/overlays/development/traffic-service
 kubectl rollout status deployment/traffic-deployment
 
-kubectl apply -k k8s/overlays/development/dashboard-service
+kubectl apply -k k8s/apps/overlays/development/dashboard-service
 kubectl rollout status deployment/dashboard-deployment
 ```
 
-To get dashboard URL:
+Install Emissary-ingress and its CRDs:
 
 ```bash
-minikube service dashboard-service --url
+export EMISSARY_VERSION=4.1.0
+
+helm upgrade --install emissary-crds \
+  oci://ghcr.io/emissary-ingress/emissary-crds-chart \
+  --version "$EMISSARY_VERSION" \
+  --namespace emissary \
+  --create-namespace \
+  --wait
+
+helm upgrade --install emissary \
+  oci://ghcr.io/emissary-ingress/emissary-ingress \
+  --version "$EMISSARY_VERSION" \
+  --namespace emissary \
+  --wait
+
+kubectl rollout status deployment/emissary -n emissary
+
+kubectl apply -k k8s/ingress
+minikube service emissary -n emissary --url
 ```
 
-To get Traffic Service URL (useful when you want to call `http://{traffic-service-url}/traffic-data` API to ingest new traffic records):
-
-```bash
-minikube service traffic-service --url
-```
+Emissary-ingress is the single external entry point. Use its address for dashboard-service at `/dashboard/` and traffic-service at `/traffic-data/`.
 
 To deploy a newly published `latest` docker image:
 
