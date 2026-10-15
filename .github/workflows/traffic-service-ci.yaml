@@ -74,7 +74,7 @@ jobs:
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
           sed -i -E "/name: ghcr.io\\/saumilshah-7\\/traffic-service/{n;n;s|digest:.*|digest: ${IMAGE_DIGEST}|;}" \
-            ../k8s/apps/overlays/development/traffic-service/kustomization.yaml
+            ../k8s/workloads/overlays/development/traffic-service/kustomization.yaml
 
       - name: Open deployment pull request
         id: deployment_pr
