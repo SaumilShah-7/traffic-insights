@@ -6,3 +6,8 @@ resources:
 
 patches:
   - path: patch.yaml
+
+images:
+  - name: ghcr.io/saumilshah-7/traffic-service
+    newName: ghcr.io/saumilshah-7/traffic-service
+    digest: ""

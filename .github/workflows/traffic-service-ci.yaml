@@ -10,7 +10,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
   packages: write
 
 concurrency:
@@ -55,13 +56,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build image
+      - name: Build, push and get image digest
+        id: image
         run: |
-          # GHCR image names must be lowercase, but my github.repository_owner resolves to "SaumilShah-7"
-          # Hence, hard coded in lower case
-          docker build -t ghcr.io/saumilshah-7/traffic-service:${{ github.sha }} -t ghcr.io/saumilshah-7/traffic-service:latest .
+          IMAGE=ghcr.io/saumilshah-7/traffic-service:${{ github.sha }}
 
-      - name: Push image
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+          DIGEST=$(docker image inspect \
+            --format='{{index .RepoDigests 0}}' "$IMAGE" | sed 's|.*@||')
+
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Update deployment digest
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
-          docker push ghcr.io/saumilshah-7/traffic-service:${{ github.sha }}
-          docker push ghcr.io/saumilshah-7/traffic-service:latest
+          sed -i -E "/name: ghcr.io\\/saumilshah-7\\/traffic-service/{n;n;s|digest:.*|digest: ${IMAGE_DIGEST}|;}" \
+            ../k8s/apps/overlays/development/traffic-service/kustomization.yaml
+
+      - name: Open deployment pull request
+        id: deployment_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: deploy traffic-service ${{ github.sha }}"
+          title: "Deploy traffic-service ${{ github.sha }}"
+          body: "Updates the development deployment to the immutable image digest produced by CI."
+          branch: automation/deploy-traffic-service-${{ github.sha }}
+          base: main
+          delete-branch: true
+
+      - name: Enable deployment PR auto-merge
+        if: steps.deployment_pr.outputs.pull-request-number
+        run: gh pr merge --squash --auto "${{ steps.deployment_pr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

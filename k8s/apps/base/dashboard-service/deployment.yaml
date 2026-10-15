@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: dashboard-service
-          image: ghcr.io/saumilshah-7/dashboard-service:latest
+          image: ghcr.io/saumilshah-7/dashboard-service:digest-required
           imagePullPolicy: Always
           ports:
             - name: http

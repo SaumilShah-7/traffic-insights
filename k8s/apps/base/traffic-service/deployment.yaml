@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: traffic-service
-          image: ghcr.io/saumilshah-7/traffic-service:latest
+          image: ghcr.io/saumilshah-7/traffic-service:digest-required
           imagePullPolicy: Always
           ports:
             - name: http
