@@ -10,4 +10,4 @@ patches:
 images:
   - name: ghcr.io/saumilshah-7/dashboard-service
     newName: ghcr.io/saumilshah-7/dashboard-service
-    digest: ""
+    digest: sha256:c77d6cbeb74f84280aa404efbdd3e7eb97e20212ab16af87d8006e34a3ed0abb
