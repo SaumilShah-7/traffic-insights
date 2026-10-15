@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: development
+  namespace: argocd
+spec:
+  project: traffic-insights
+  source:
+    repoURL: https://github.com/SaumilShah-7/traffic-insights.git
+    targetRevision: main
+    path: k8s/environments/development
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

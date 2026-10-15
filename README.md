@@ -54,7 +54,7 @@ npm run dev
 
 ## Kubernetes Setup
 
-Kubernetes manifests use latest images published to GitHub Container Registry.
+Kubernetes manifests use immutable image digests published to GitHub Container Registry.
 
 ### Prerequisites
 
@@ -73,13 +73,13 @@ minikube addons enable metrics-server
 kubectl create secret generic traffic-service-secret \
   --from-env-file=traffic-service/.env
 
-kubectl apply -f k8s/apps/overlays/development/environment-config.yaml
+kubectl apply -f k8s/workloads/overlays/development/environment-config.yaml
 
-kubectl apply -k k8s/apps/overlays/development/traffic-service
+kubectl apply -k k8s/workloads/overlays/development/traffic-service
 kubectl rollout status deployment/traffic-deployment
 kubectl get hpa traffic-deployment-hpa --watch
 
-kubectl apply -k k8s/apps/overlays/development/dashboard-service
+kubectl apply -k k8s/workloads/overlays/development/dashboard-service
 kubectl rollout status deployment/dashboard-deployment
 ```
 
@@ -109,11 +109,16 @@ minikube service emissary -n emissary --url
 
 Emissary-ingress is the single external entry point. Use its address for dashboard-service at `/dashboard/` and traffic-service at `/traffic-data/`.
 
-To deploy a newly published `latest` docker image:
+### Argo CD
+
+Install Argo CD and register the GitOps Applications:
 
 ```bash
-kubectl rollout restart deployment/traffic-deployment
-kubectl rollout restart deployment/dashboard-deployment
+kubectl create namespace argocd
+kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -f k8s/argocd/project.yaml
+kubectl apply -f k8s/argocd/development.yaml
 ```
 
 When finished:
@@ -124,9 +129,50 @@ minikube stop
 
 ## CI/CD
 
-CI pipelines have been established for both services. Check `.github/workflows` folder.
-Deployment remains manual because GitHub-hosted runner cannot reach local Minikube cluster. After CI publishes an image, restart relevant k8 deployment using command mentioned above.
+CI pipelines test both services, publish immutable images to GHCR, and open
+deployment pull requests. Argo CD runs inside the Kubernetes cluster and
+deploys the merged Git state, so GitHub-hosted runners do not need network
+access to the Minikube API server.
 
 ## Tests
 
 Added basic UTs.
+
+## Fresh cluster with Argo CD
+
+Run these commands from the repository root. The initial image digests must be
+populated in the development workload overlays before Argo CD syncs them.
+
+```bash
+open -a Docker
+minikube start --driver=docker
+minikube addons enable metrics-server
+
+kubectl create secret generic traffic-service-secret \
+  --from-env-file=traffic-service/.env
+
+export EMISSARY_VERSION=4.1.0
+
+helm upgrade --install emissary-crds \
+  oci://ghcr.io/emissary-ingress/emissary-crds-chart \
+  --version "$EMISSARY_VERSION" \
+  --namespace emissary \
+  --create-namespace \
+  --wait
+
+helm upgrade --install emissary \
+  oci://ghcr.io/emissary-ingress/emissary-ingress \
+  --version "$EMISSARY_VERSION" \
+  --namespace emissary \
+  --wait
+
+kubectl rollout status deployment/emissary -n emissary
+
+kubectl create namespace argocd
+kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -f k8s/argocd/project.yaml
+kubectl apply -f k8s/argocd/development.yaml
+
+minikube service emissary -n emissary --url
+```

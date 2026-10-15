@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: traffic-insights
+  namespace: argocd
+spec:
+  description: Traffic Insights applications
+  sourceRepos:
+    - https://github.com/SaumilShah-7/traffic-insights.git
+  destinations:
+    - namespace: default
+      server: https://kubernetes.default.svc
+    - namespace: emissary
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
