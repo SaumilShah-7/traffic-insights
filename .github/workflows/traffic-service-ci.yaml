@@ -88,8 +88,8 @@ jobs:
           base: main
           delete-branch: true
 
-      - name: Enable deployment PR auto-merge
+      - name: Merge deployment PR
         if: steps.deployment_pr.outputs.pull-request-number
-        run: gh pr merge --squash --auto "${{ steps.deployment_pr.outputs.pull-request-number }}"
+        run: gh pr merge --squash "${{ steps.deployment_pr.outputs.pull-request-number }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
