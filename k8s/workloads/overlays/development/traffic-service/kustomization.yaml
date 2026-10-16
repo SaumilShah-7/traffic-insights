@@ -10,4 +10,4 @@ patches:
 images:
   - name: ghcr.io/saumilshah-7/traffic-service
     newName: ghcr.io/saumilshah-7/traffic-service
-    digest: sha256:bb64613bd46471044af45de17733669aefa44db9310f7e47569fdecb13dbb3be
+    digest: sha256:fb760779116e941692b3dda3975c5d6b4bbd84f53deccc93aeb5dbb2e2096dd9
