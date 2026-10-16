@@ -71,16 +71,6 @@ DOM = Document Object Model
 ----------------
 
 Changes
-
-- remove role
-- editingdate not required
-- isloadingoptions instead of isloadingfilters
-- hasFetchError instead of fetchError
-- jsx expression instaead of jsx string literals
-- direct function reference
-- draft - split into draft (row state) & editingDate (table state): The re-render point I made earlier stands and is the real benefit: the table stops receiving in-progress values, so it isn't re-rendered on every keystroke. The API tidying is a rounding error, not a reason to do it.
-- removed .top-nav button:hover:not(:disabled)
-- isUpdating to dictate disabled state for action buttons of each row 
 - UTs: add aria-label to refer, waitFor only for async ops
 
 ---------

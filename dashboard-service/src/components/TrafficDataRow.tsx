@@ -2,15 +2,15 @@ import {
   TrafficDataRecord,
   TrafficMetrics,
 } from '../api/traffic-service/interface';
+import { useState } from 'react';
 
 interface TrafficDataRowProps {
   record: TrafficDataRecord;
-  draft: TrafficDataRecord | null;
+  isEditing: boolean;
   isUpdating: boolean;
   onEdit: (record: TrafficDataRecord) => void;
   onCancel: () => void;
-  onMetricChange: (metric: keyof TrafficMetrics, value: number) => void;
-  onUpdate: () => void;
+  onUpdate: (record: TrafficDataRecord) => void;
 }
 
 const metricKeys: Array<keyof TrafficMetrics> = [
@@ -23,32 +23,40 @@ const isMetricValid = (value: number) => Number.isInteger(value) && value >= 1;
 
 const TrafficDataRow = ({
   record,
-  draft,
+  isEditing,
   isUpdating,
   onEdit,
   onCancel,
-  onMetricChange,
   onUpdate,
 }: TrafficDataRowProps) => {
-  const hasValidDraft =
-    draft !== null && metricKeys.every((key) => isMetricValid(draft[key]));
+  const [draft, setDraft] = useState<TrafficDataRecord | null>(null);
+
+  const currentRecord = draft ?? record;
+  const hasValidDraft = metricKeys.every((key) =>
+    isMetricValid(currentRecord[key]),
+  );
 
   return (
     <tr>
       <td>{record.date}</td>
       {metricKeys.map((key) => (
         <td key={key}>
-          {draft ? (
+          {isEditing ? (
             <input
               className="metric-input"
               type="number"
-              min="1"
-              step="1"
+              min={1}
+              step={1}
               required={true}
-              value={Number.isNaN(draft[key]) ? '' : draft[key]}
-              onChange={(event) => {
-                onMetricChange(key, event.target.valueAsNumber);
-              }}
+              value={
+                Number.isNaN(currentRecord[key]) ? '' : currentRecord[key]
+              }
+              onChange={(event) =>
+                setDraft({
+                  ...currentRecord,
+                  [key]: event.target.valueAsNumber,
+                })
+              }
             />
           ) : (
             record[key].toLocaleString()
@@ -57,13 +65,13 @@ const TrafficDataRow = ({
       ))}
       <td>
         <div className="row-actions">
-          {draft ? (
+          {isEditing ? (
             <>
               <button
                 className="action-button action-button--primary"
                 type="button"
                 disabled={isUpdating || !hasValidDraft}
-                onClick={onUpdate}
+                onClick={() => onUpdate(currentRecord)}
               >
                 {isUpdating ? 'Updating…' : 'Update'}
               </button>
@@ -80,7 +88,11 @@ const TrafficDataRow = ({
             <button
               className="action-button"
               type="button"
-              onClick={() => onEdit(record)}
+              disabled={isUpdating}
+              onClick={() => {
+                setDraft(record);
+                onEdit(record);
+              }}
             >
               Edit
             </button>

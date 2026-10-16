@@ -175,13 +175,14 @@ minikube service traffic-service --url
 kubectl apply -f k8s/dashboard-service-deployment.yaml
 
 kubectl get pods -l app=traffic-pods -o wide
+kubectl get pods -A
 kubectl describe pod traffic-deployment-589df9478d (gives k8 events)
 
-kubectl rollout status deployment dashboard-deployment
-kubectl rollout restart deployment dashboard-deployment
+kubectl rollout status deployment/dashboard-deployment
+kubectl rollout restart deployment/dashboard-deployment
 
-kubectl delete deployment traffic-deployment
-kubectl delete service traffic-service
+kubectl delete deployment/traffic-deployment
+kubectl delete service/traffic-service
 
 kubectl logs deployment/dashboard-deployment --tail=50 (gives application logs)
 
@@ -312,3 +313,9 @@ HPA
 1. Deployment controller: Manages the rollout by deciding the desired replica counts for v1 (\(x\)) and v2 (\(y\)). It identifies v2 as the new ReplicaSet by comparing its Pod template with the Deployment's current Pod template. During a normal rolling update, it generally scales up v2 and scales down v1, subject to the rollout strategy and availability constraints.
 2. ReplicaSet controllers: Each ReplicaSet controller ensures that the actual number of Pods matches its ReplicaSet's desired replica count. It creates or deletes Pods as needed.
 3. HPA controller: Calculates CPU utilization across eligible Pods from both ReplicaSets, generally covering those \(x+y\) Pods, and adjusts the Deployment's desired total replica count. It does not decide which ReplicaSet to scale.
+
+
+-----------
+
+Helm: Packages related Kubernetes resources into a release and manages that release's lifecycle, including installation, upgrades and rollback.
+CRD + controller: Defines a higher-level API resource and runs custom, ongoing reconciliation and orchestration logic for it.

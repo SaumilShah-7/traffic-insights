@@ -1,53 +1,46 @@
-import {
-  TrafficDataRecord,
-  TrafficMetrics,
-} from '../api/traffic-service/interface';
+import { TrafficDataRecord } from '../api/traffic-service/interface';
 import TrafficDataRow from './TrafficDataRow';
 
 interface TrafficDataTableProps {
   records: TrafficDataRecord[];
-  draft: TrafficDataRecord | null;
   editingDate: string | null;
   isUpdating: boolean;
   isLoading: boolean;
-  fetchError: string | null;
+  hasFetchError: boolean;
   updateError: string | null;
   onEdit: (record: TrafficDataRecord) => void;
   onCancel: () => void;
-  onMetricChange: (metric: keyof TrafficMetrics, value: number) => void;
-  onUpdate: () => void;
+  onUpdate: (record: TrafficDataRecord) => void;
 }
 
 const TrafficDataTable = ({
   records,
-  draft,
   editingDate,
   isUpdating,
   isLoading,
-  fetchError,
+  hasFetchError,
   updateError,
   onEdit,
   onCancel,
-  onMetricChange,
   onUpdate,
 }: TrafficDataTableProps) => (
   <section className="chart-card data-table-card">
     <div className="data-table-heading">
       <h2>Traffic data</h2>
-      {updateError && <p role="alert">{updateError}</p>}
+      {updateError && <p>{updateError}</p>}
     </div>
 
     {isLoading ? (
-      <div className="data-state" role="status">
+      <div className="data-state">
         Loading records…
       </div>
-    ) : fetchError ? (
-      <div className="data-table-state chart-state--error" role="alert">
+    ) : hasFetchError ? (
+      <div className="data-table-state chart-state--error">
         <div className="chart-state-icon">!</div>
         <h3>Unexpected error</h3>
       </div>
     ) : records.length === 0 ? (
-      <div className="data-table-state" role="status">
+      <div className="data-table-state">
         <div className="chart-state-icon">—</div>
         <h3>No data available</h3>
         <p>Try choosing different filters</p>
@@ -69,11 +62,10 @@ const TrafficDataTable = ({
               <TrafficDataRow
                 key={record.date}
                 record={record}
-                draft={editingDate === record.date ? draft : null}
-                isUpdating={isUpdating && editingDate === record.date}
+                isEditing={editingDate === record.date}
+                isUpdating={isUpdating}
                 onEdit={onEdit}
                 onCancel={onCancel}
-                onMetricChange={onMetricChange}
                 onUpdate={onUpdate}
               />
             ))}

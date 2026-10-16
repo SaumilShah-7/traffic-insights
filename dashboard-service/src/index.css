@@ -79,11 +79,6 @@ select {
   transition: background 120ms ease;
 }
 
-.top-nav button:hover:not(:disabled) {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-}
-
 .top-nav button.active {
   color: #17191f;
   background: #fff;

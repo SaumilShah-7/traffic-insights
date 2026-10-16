@@ -8,7 +8,6 @@ import {
   TrafficDataFilterOptions,
   TrafficDataFilters,
   TrafficDataRecord,
-  TrafficMetrics,
 } from '../api/traffic-service/interface';
 import TrafficDataFiltersComponent from '../components/TrafficDataFilters';
 import TrafficDataTable from '../components/TrafficDataTable';
@@ -29,12 +28,11 @@ const DataPage = () => {
   const [options, setOptions] = useState(initialOptions);
   const [filters, setFilters] = useState(initialFilters);
   const [records, setRecords] = useState<TrafficDataRecord[]>([]);
-  const [draft, setDraft] = useState<TrafficDataRecord | null>(null);
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isLoadingFilters, setIsLoadingFilters] = useState(true);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [isLoadingRecords, setIsLoadingRecords] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [hasFetchError, setHasFetchError] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,10 +43,10 @@ const DataPage = () => {
         setOptions(await getTrafficDataFilterOptions(controller.signal));
       } catch {
         if (!controller.signal.aborted) {
-          setFetchError('Unable to load filter options.');
+          setHasFetchError(true);
         }
       } finally {
-        if (!controller.signal.aborted) setIsLoadingFilters(false);
+        if (!controller.signal.aborted) setIsLoadingOptions(false);
       }
     };
 
@@ -63,9 +61,8 @@ const DataPage = () => {
 
     const loadRecords = async () => {
       setIsLoadingRecords(true);
-      setFetchError(null);
+      setHasFetchError(false);
       setUpdateError(null);
-      setDraft(null);
       setEditingDate(null);
 
       try {
@@ -73,7 +70,7 @@ const DataPage = () => {
       } catch {
         if (controller.signal.aborted) return;
         setRecords([]);
-        setFetchError('Unable to fetch traffic records.');
+        setHasFetchError(true);
       } finally {
         if (!controller.signal.aborted) setIsLoadingRecords(false);
       }
@@ -86,31 +83,23 @@ const DataPage = () => {
   }, [filters]);
 
   const handleEdit = (record: TrafficDataRecord) => {
-    setDraft({ ...record });
     setEditingDate(record.date);
     setUpdateError(null);
   };
 
-  const handleMetricChange = (metric: keyof TrafficMetrics, value: number) => {
-    setDraft((current) =>
-      current ? { ...current, [metric]: value } : current,
-    );
-  };
-
-  const handleUpdate = async () => {
-    if (!draft) return;
-
+  const handleUpdate = async (updatedRecord: TrafficDataRecord) => {
     setIsUpdating(true);
     setUpdateError(null);
     try {
-      await updateTrafficData(draft);
+      await updateTrafficData(updatedRecord);
       setRecords((current) =>
-        current.map((record) => (record.date === draft.date ? draft : record)),
+        current.map((record) =>
+          record.date === updatedRecord.date ? updatedRecord : record,
+        ),
       );
-      setDraft(null);
       setEditingDate(null);
     } catch {
-      setUpdateError(`Unable to update the record for ${draft.date}.`);
+      setUpdateError(`Unable to update the record for ${updatedRecord.date}.`);
     } finally {
       setIsUpdating(false);
     }
@@ -121,25 +110,22 @@ const DataPage = () => {
       <TrafficDataFiltersComponent
         filters={filters}
         options={options}
-        isLoading={isLoadingFilters}
+        isLoading={isLoadingOptions}
         onChange={setFilters}
       />
       <TrafficDataTable
         records={records}
-        draft={draft}
         editingDate={editingDate}
         isUpdating={isUpdating}
         isLoading={isLoadingRecords}
-        fetchError={fetchError}
+        hasFetchError={hasFetchError}
         updateError={updateError}
         onEdit={handleEdit}
         onCancel={() => {
-          setDraft(null);
           setEditingDate(null);
           setUpdateError(null);
         }}
-        onMetricChange={handleMetricChange}
-        onUpdate={() => void handleUpdate()}
+        onUpdate={handleUpdate}
       />
     </main>
   );

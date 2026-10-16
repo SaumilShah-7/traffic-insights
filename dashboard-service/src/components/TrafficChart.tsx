@@ -71,17 +71,17 @@ const TrafficChart = ({
 
       <div className="chart-wrapper">
         {isLoading ? (
-          <div className="chart-state" role="status">
+          <div className="chart-state">
             <div className="chart-state-icon">—</div>
             <h3>Loading metrics</h3>
           </div>
         ) : hasError ? (
-          <div className="chart-state chart-state--error" role="alert">
+          <div className="chart-state chart-state--error">
             <div className="chart-state-icon">!</div>
             <h3>Unexpected error</h3>
           </div>
         ) : chartData.length === 0 ? (
-          <div className="chart-state" role="status">
+          <div className="chart-state">
             <div className="chart-state-icon">—</div>
             <h3>No data available</h3>
             <p>Try choosing a different month or year</p>
